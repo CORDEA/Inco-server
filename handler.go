@@ -5,11 +5,14 @@ import (
 	"net/http"
 	"crypto/rsa"
 	"encoding/base64"
-	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
+	"time"
 )
 
+const Secret string = "secret"
+
 type Handler struct {
-	Key *rsa.PublicKey
+	Key   *rsa.PublicKey
 	Saver *Saver
 }
 
@@ -25,10 +28,50 @@ func (h *Handler) PostHistory(c echo.Context) error {
 }
 
 func (h *Handler) GetHistories(c echo.Context) error {
-	jsonBytes, err := json.Marshal(h.Saver.GetHistories())
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-	return c.String(http.StatusOK, string(jsonBytes))
+	return c.JSON(http.StatusOK, h.Saver.GetHistories())
 }
 
+func (h *Handler) Login(c echo.Context) error {
+	username := c.QueryParam("user")
+	password := c.QueryParam("pass")
+	generated := Generate(password)
+
+	user := h.Saver.GetUser(username)
+	if generated != user.Password {
+		return echo.ErrUnauthorized
+	}
+
+	token, err := token(username)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"token": token,
+	})
+}
+
+func (h *Handler) SignUp(c echo.Context) error {
+	username := c.FormValue("user")
+	password := c.FormValue("pass")
+	h.Saver.AddUser(username, password)
+
+	token, err := token(username)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"token": token,
+	})
+}
+
+func token(username string) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user"] = username
+	claims["admin"] = false
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+	return token.SignedString([]byte(Secret))
+}
