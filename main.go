@@ -42,9 +42,10 @@ func main() {
 	e.POST("/signup", handler.SignUp)
 	e.GET("/login", handler.Login)
 
+	e.POST("/histories", handler.PostHistory)
+
 	h := e.Group("/histories")
 	h.Use(middleware.JWT([]byte(Secret)))
-	h.POST("", handler.PostHistory)
 	h.GET("", handler.GetHistories)
 	e.Logger.Fatal(e.Start(":8080"))
 }
