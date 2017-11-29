@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/labstack/echo"
-	"net/http"
 	"crypto/rsa"
 	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -24,6 +25,15 @@ func (h *Handler) PostHistory(c echo.Context) error {
 	}
 	encoded := base64.StdEncoding.EncodeToString(encrypted)
 	h.Saver.AddHistory(encoded)
+	return nil
+}
+
+func (h *Handler) DeleteHistory(c echo.Context) error {
+	id, err := strconv.ParseInt(c.FormValue("id"), 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	h.Saver.DeleteHistory(id)
 	return nil
 }
 

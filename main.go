@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/labstack/echo"
 	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const DbName = "inco.db?charset=utf8&parseTime=True&loc=Local"
@@ -47,5 +47,6 @@ func main() {
 	h := e.Group("/histories")
 	h.Use(middleware.JWT([]byte(Secret)))
 	h.GET("", handler.GetHistories)
+	h.DELETE("", handler.DeleteHistory)
 	e.Logger.Fatal(e.Start(":8080"))
 }
