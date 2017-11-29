@@ -1,11 +1,11 @@
 package main
 
 import (
-	"crypto/rsa"
 	"crypto/rand"
-	"io/ioutil"
-	"encoding/pem"
+	"crypto/rsa"
 	"crypto/x509"
+	"encoding/pem"
+	"io/ioutil"
 )
 
 func Encrypt(pub *rsa.PublicKey, msg string) ([]byte, error) {
