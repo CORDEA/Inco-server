@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"strings"
 )
 
 const Secret string = "secret"
@@ -29,11 +30,20 @@ func (h *Handler) PostHistory(c echo.Context) error {
 }
 
 func (h *Handler) DeleteHistory(c echo.Context) error {
-	id, err := strconv.ParseInt(c.FormValue("id"), 10, 64)
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+	id := c.FormValue("id")
+	var ids []string
+	if strings.Contains(id, ",") {
+		ids = strings.Split(id, ",")
+	} else {
+		ids = []string{id}
 	}
-	h.Saver.DeleteHistory(id)
+	for i := range ids {
+		id, err := strconv.ParseInt(ids[i], 10, 64)
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+		h.Saver.DeleteHistory(id)
+	}
 	return nil
 }
 
