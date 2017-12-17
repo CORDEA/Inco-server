@@ -48,5 +48,13 @@ func main() {
 	h.Use(middleware.JWT([]byte(Secret)))
 	h.GET("", handler.GetHistories)
 	h.DELETE("", handler.DeleteHistory)
+
+	// FIXME: Deprecated
+	// You should use DELETE.
+	// Red language has not implemented DELETE yet. So, POST is available.
+	d := e.Group("/delete-histories")
+	d.Use(middleware.JWT([]byte(Secret)))
+	d.POST("", handler.DeleteHistory)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
